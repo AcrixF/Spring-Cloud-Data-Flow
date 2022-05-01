@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+
+    <!-- Spring Integration -->
+
+    <!-- Spring Integration: Http -->
+    <int-http:inbound-channel-adapter id="movie"
+                                      supported-methods="POST"
+                                      channel="input"
+                                      path="/v2/movie"
+                                      request-payload-type="org.neoa.ch03.movieweb.model.Movie"
+                                      status-code-expression="T(org.springframework.http.HttpStatus).ACCEPTED"/>
+
+    <int-http:inbound-channel-adapter id="movies"
+                                      supported-methods="POST"
+                                      channel="input"
+                                      path="/v2/movies"
+                                      request-payload-type="org.neoa.ch03.movieweb.model.Movie[]"
+                                      status-code-expression="T(org.springframework.http.HttpStatus).ACCEPTED"/>
+
+    <!-- Spring Integration: Execution Channel -->
+    <int:channel id="input"/>
+
+    <!-- Spring Integration Service activator. -->
+    <int:service-activator input-channel="input" ref="movieEndpoint"/>
+
+
+</beans>
