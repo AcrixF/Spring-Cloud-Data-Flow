@@ -6,3 +6,4 @@ ch03-movie-app/.mvn/**
 ch03-movie-web/.gitignore
 ch03-movie-web/mvnw.cmd
 ch03-movie-web/mvnw
+ch03-movie-web/.mvn/**
