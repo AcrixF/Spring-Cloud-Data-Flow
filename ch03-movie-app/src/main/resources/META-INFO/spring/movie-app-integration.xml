@@ -3,7 +3,8 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:int="http://www.springframework.org/schema/integration"
        xmlns:int-file="http://www.springframework.org/schema/integration/file"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/integration/file https://www.springframework.org/schema/integration/file/spring-integration-file.xsd">
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/integration/file https://www.springframework.org/schema/integration/file/spring-integration-file.xsd http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
 
 
     <!-- Spring Integration -->
@@ -17,17 +18,25 @@
     <int:channel id="input"/>
 
     <!-- Spring Integration: File -->
-    <int:service-activator id="movieProcessor"
-                           input-channel="input"
-                           ref="movieEndpoint"
-                           output-channel="output"/>
+    <int:service-activator id="movieProcessor" input-channel="input" ref="movieEndpoint" output-channel="output"/>
 
     <!-- Spring Integration: Direct Channel -->
     <int:channel id="output"/>
 
-    <!-- Spring Integration: File -->
-    <int-file:outbound-channel-adapter channel="output"
+    <!-- Spring Integration: Router -->
+    <int:recipient-list-router input-channel="output">
+        <int:recipient channel="toFile"/>
+        <int:recipient channel="toHttp"/>
+    </int:recipient-list-router>
+
+    <!-- Spring Integration: Direct Channels -->
+    <int:channel id="toFile"/>
+    <int:channel id="toHttp"/>
+
+    <!-- Spring Integration: File and Http-->
+    <int-file:outbound-channel-adapter channel="toFile"
                                        directory="src/main/resources/movies"
                                        filename-generator-expression="headers['name'] + '.processed'"/>
+    <int-http:outbound-channel-adapter channel="toHttp" url="http://localhost:8080/v1/movies" http-method="POST"/>
 
 </beans>
