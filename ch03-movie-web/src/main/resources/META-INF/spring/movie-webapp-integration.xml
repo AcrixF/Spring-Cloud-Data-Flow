@@ -23,20 +23,20 @@
     <!-- Spring Integration: Http -->
     <int-http:inbound-channel-adapter id="movie"
                                       supported-methods="POST"
-                                      channel="input"
+                                      channel="publisher"
                                       path="/v2/movie"
                                       request-payload-type="org.neoa.ch03.movieweb.model.Movie"
                                       status-code-expression="T(org.springframework.http.HttpStatus).ACCEPTED"/>
 
     <int-http:inbound-channel-adapter id="movies"
                                       supported-methods="POST"
-                                      channel="input"
+                                      channel="publisher"
                                       path="/v2/movies"
                                       request-payload-type="org.neoa.ch03.movieweb.model.Movie[]"
                                       status-code-expression="T(org.springframework.http.HttpStatus).ACCEPTED"/>
 
     <!-- Spring Integration: Execution Channel -->
-    <int:channel id="input"/>
+    <!--<int:channel id="input"/> -->
 
     <!-- Spring Integration Service activator. -->
     <!--<int:service-activator input-channel="input" ref="movieEndpoint"/>-->
@@ -44,6 +44,43 @@
     <int-jdbc:outbound-channel-adapter id="jdbc"
                                        query="insert into movies(title, actor, year) values (:payload.title, :payload.actor, :payload.year)"
                                        data-source="dataSource"
-                                       channel="input"/>
+                                       channel="publisher"
+                                       order="1"/>
+
+    <!-- Publish/Subscribe Channel -->
+    <int:publish-subscribe-channel id="publisher"/>
+
+    <!-- Spring Integration: Mail -->
+    <int-mail:outbound-channel-adapter channel="mail" mail-sender="mailSender"/>
+    <int:service-activator input-channel="publisher" output-channel="mail" ref="movieWebMailEndpoint" order="2"/>
+
+    <int:channel id="mail">
+        <int:dispatcher task-executor="taskExecutor"/>
+    </int:channel>
+
+    <!-- Mail Properties -->
+    <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${email.host}"/>
+        <property name="port" value="${email.port}"/>
+        <property name="username" value="${email.account.name}"/>
+        <property name="password" value="${email.account.password}"/>
+        <property name="javaMailProperties">
+            <props>
+                <prop key="mail.smtp.starttls.enable">true</prop>
+                <prop key="mail.smtp.auth">true</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Helpers -->
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="queueCapacity" value="25"/>
+    </bean>
+
+    <bean id="jsonConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+        <property name="supportedMediaTypes" value="application/json"/>
+    </bean>
 
 </beans>
