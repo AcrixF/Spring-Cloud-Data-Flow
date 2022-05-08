@@ -7,3 +7,9 @@ ch03-movie-web/.gitignore
 ch03-movie-web/mvnw.cmd
 ch03-movie-web/mvnw
 ch03-movie-web/.mvn/**
+
+ch04-batch-movie/.gitignore
+ch04-batch-movie/mvnw.cmd
+ch04-batch-movie/mvnw
+ch04-batch-movie/.mvn/**
+
